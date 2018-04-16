@@ -10,14 +10,20 @@ interface LancamentoDao {
     fun getLancamentos(): Array<Lancamento?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertLancamento(token: Lancamento)
+    fun insertLancamentos(vararg lancamento: Lancamento)
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
-    fun updateLancamento(token: Lancamento)
+    fun updateLancamento(lancamento: Lancamento)
 
     @Delete
-    fun deleteLancamento(token: Lancamento)
+    fun deleteLancamento(lancamento: Lancamento)
 
     @Query("SELECT * FROM lancamentos WHERE id = :id")
-    fun getLancamento(id: Long): Flowable<Lancamento>
+    fun getLancamento(id: Long): Lancamento
+
+    @Query("SELECT * FROM lancamentos WHERE id = null")
+    fun getLancamentosNaoEnviados(): Array<Lancamento?>
+
+    @Query("SELECT * FROM lancamentos WHERE id_local = :idLocal")
+    fun getLancamentoLocal(idLocal: Long): Lancamento
 }

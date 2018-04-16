@@ -2,29 +2,43 @@ package com.example.android.projetoparceiro
 
 import android.content.Intent
 import android.os.Bundle
+import android.support.design.widget.BottomNavigationView
 import android.support.design.widget.NavigationView
 import android.support.design.widget.Snackbar
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
-import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.AdapterView
+import android.widget.LinearLayout
+import android.widget.ListView
 import android.widget.Toast
+import com.example.android.projetoparceiro.adapter.LancamentoAdapter
 import com.example.android.projetoparceiro.data.AppDatabase
+import com.example.android.projetoparceiro.data.JsonData
+import com.example.android.projetoparceiro.data.Lancamento
 import com.example.android.projetoparceiro.model.User
 import com.example.android.projetoparceiro.network.NetworkUtil
+import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
+import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.nav_header_main.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import kotlin.collections.ArrayList
 
-class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+class MainActivity : AbstractConnect(), NavigationView.OnNavigationItemSelectedListener {
 
     var tokenString: String = ""
 
     private lateinit var appDatabase: AppDatabase
+
+    lateinit var listView: ListView
+
+
+    private lateinit var adapter: LancamentoAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,7 +62,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
 
     fun logout() {
-
         val mainActivity = Intent(applicationContext, LoginActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
         startActivity(mainActivity)
@@ -72,9 +85,110 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             tokenString = token.token
 
             setUserPerfil()
+
+            defineBottomNavigationView()
+
+            mergeDataBase()
         } else {
             logout()
         }
+
+    }
+
+    private fun mergeDataBase() {
+        val response: Call<Array<Lancamento>> = NetworkUtil().getAuthenticatedRetrofit(tokenString).getList()
+
+        response.enqueue(object : Callback<Array<Lancamento>> {
+            override fun onFailure(call: Call<Array<Lancamento>>?, t: Throwable?) {
+
+            }
+
+            override fun onResponse(call: Call<Array<Lancamento>>?, response: Response<Array<Lancamento>>?) {
+                val responseCode = response?.code()
+
+                when (responseCode) {
+                    200 -> {
+                        val lancamentosStringJson = Gson().toJson(response.body())
+
+                        val lancamentos: Array<Lancamento>? = response.body()
+
+                        val jsonDataDao = appDatabase.jsonDataDao()
+
+                        val jsonObject: Array<JsonData> = jsonDataDao.getJsonData()
+
+                        if (jsonObject.isEmpty() || (jsonObject.size > 1 && jsonObject[0].jsonData == lancamentosStringJson)) {
+                            //Popular banco local
+
+                            jsonObject.forEach {
+                                jsonDataDao.deleteJsonData(it)
+                            }
+
+                            jsonDataDao.insertJsonData(JsonData(null, lancamentosStringJson))
+
+                        }
+
+                        preencherListViewLancamentos(lancamentos)
+                    }
+                    401 -> {
+
+                        if (isOnline()) {
+                            logout()
+                        } else {
+                            showSnackBarMessage("Não há conexão com a internet.")
+                        }
+                    }
+                    else -> showSnackBarMessage("Tente novamente mais tarde")
+                }
+            }
+
+        })
+    }
+
+    private fun preencherListViewLancamentos(lancamentos: Array<Lancamento>?) {
+        val arrayListLancamento = ArrayList<Lancamento>()
+
+        lancamentos?.forEach {
+            arrayListLancamento.add(it)
+        }
+
+        setListView()
+
+        if (lancamentos != null) {
+            setLancamentoListViewHome(arrayListLancamento)
+        }
+    }
+
+
+    private fun setListView() {
+        listView = lv_list
+    }
+
+    private fun setLancamentoListViewHome(lancamento: ArrayList<Lancamento>) {
+        val paramsListView: LinearLayout.LayoutParams = listView.layoutParams as LinearLayout.LayoutParams
+
+        paramsListView.setMargins(
+                paramsListView.leftMargin,
+                paramsListView.topMargin,
+                paramsListView.rightMargin,
+                125
+        )
+
+        listView.layoutParams = paramsListView
+
+        adapter = LancamentoAdapter(lancamento, applicationContext)
+
+        listView.adapter = adapter
+
+        listView.onItemClickListener = AdapterView.OnItemClickListener { parent, view, position, id ->
+            val dataModel = lancamento[position]
+
+            val mainActivity = Intent(applicationContext, LancamentoFormActivity::class.java)
+
+            var idLancamento = dataModel.id
+
+            startActivity(mainActivity)
+        }
+
 
     }
 
@@ -166,5 +280,29 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         drawer_layout.closeDrawer(GravityCompat.START)
         return true
+    }
+
+
+    private fun defineBottomNavigationView() {
+        val navigation = findViewById<BottomNavigationView>(R.id.navigation)
+        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
+    }
+
+    private val mOnNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
+        when (item.itemId) {
+            R.id.navigation_home -> {
+                //setUsuarioListViewHome()
+                return@OnNavigationItemSelectedListener true
+            }
+            R.id.navigation_dashboard -> {
+                //defineListViewDashboard()
+                return@OnNavigationItemSelectedListener true
+            }
+            R.id.navigation_notifications -> {
+                //defineListViewNotification()
+                return@OnNavigationItemSelectedListener true
+            }
+        }
+        false
     }
 }

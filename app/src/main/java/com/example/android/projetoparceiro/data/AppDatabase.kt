@@ -19,7 +19,10 @@ package com.example.android.projetoparceiro.data
 import android.arch.persistence.room.Database
 import android.arch.persistence.room.Room
 import android.arch.persistence.room.RoomDatabase
+import android.arch.persistence.room.TypeConverters
 import android.content.Context
+import com.example.android.projetoparceiro.util.DateConverter
+
 
 /**
  * The Room database that contains the Users table
@@ -32,11 +35,14 @@ import android.content.Context
             Conta::class,
             DocumentoAnexo::class,
             Local::class,
-            Lancamento::class
+            Lancamento::class,
+            JsonData::class
         ),
-        version = 1,
+        version = 2,
         exportSchema = false
 )
+
+@TypeConverters(DateConverter::class)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun tokenDao(): TokenDao
@@ -45,6 +51,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun documentoAnexoDao(): DocumentoAnexoDao
     abstract fun localDao(): LocalDao
     abstract fun pessoaDao(): PessoaDao
+    abstract fun jsonDataDao(): JsonDataDao
 
     companion object {
 
@@ -55,7 +62,7 @@ abstract class AppDatabase : RoomDatabase() {
 
                 INSTANCE = Room.databaseBuilder<AppDatabase>(context.applicationContext,
                         AppDatabase::class.java,
-                        "projeto-parceiro-final-db")
+                        "profissional-parceiro-pp-db")
                         .allowMainThreadQueries()
                         .build()
             }

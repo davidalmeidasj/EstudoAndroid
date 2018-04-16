@@ -1,5 +1,6 @@
 package com.example.android.projetoparceiro.network
 
+import com.example.android.projetoparceiro.data.Lancamento
 import com.example.android.projetoparceiro.model.Login
 import com.example.android.projetoparceiro.model.ResponseToken
 import com.example.android.projetoparceiro.model.User
@@ -22,7 +23,7 @@ interface RetrofitInterface {
     fun refresh(): Call<ResponseToken>
 
     @GET("/v1/lancamento/lista")
-    fun getList(): Call<ResponseToken>
+    fun getList(): Call<Array<Lancamento>>
 //
 //    @PUT("users/{email}")
 //    fun changePassword(@Path("email") email: String, @Body user: Usuario): Observable<ResponseToken<com.example.android.logindefault.model.ResponseToken>>

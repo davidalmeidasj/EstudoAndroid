@@ -18,8 +18,8 @@
     <string name="title_activity_login">Login</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="nav_header_title">Nome Parceiro</string>
-    <string name="nav_header_subtitle">nome.parceiro@app.com</string>
+    <string name="nav_header_title"> </string>
+    <string name="nav_header_subtitle"> </string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
 
@@ -30,4 +30,19 @@
     <string name="confirmar_senha">Confirmar senha</string>
     <string name="senha">Senha</string>
     <string name="email">Email</string>
+
+    <string name="title_home">Tittle Home</string>
+    <string name="title_dashboard">Tittle Dashboard</string>
+    <string name="title_notifications">Title Notifications</string>
+
+    <string name="lancamento_data_placeholder">Data de execução</string>
+    <string name="lancamento_hora_placeholder">Hora da execução</string>
+    <string name="lancamento_cliente_placeholder">Nome do Cliente</string>
+    <string name="lancamento_tipo_placeholder">Tipo de atividade (corte de cabelo, escova, …)</string>
+    <string name="lancamento_valor_placeholder">Valor (R$)</string>
+    <string name="escolher_data">Escolher data</string>
+    <string name="escolher_hora">Escolher a hora</string>
+
+    <string name="texto_ok">OK</string>
+    <string name="texto_cancelar">CANCELAR</string>
 </resources>

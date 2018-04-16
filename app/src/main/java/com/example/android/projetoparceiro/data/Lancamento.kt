@@ -1,6 +1,8 @@
 package com.example.android.projetoparceiro.data
 
 import android.arch.persistence.room.*
+import com.example.android.projetoparceiro.R
+import com.example.android.projetoparceiro.util.DateConverter
 import java.util.*
 
 @Entity(
@@ -12,15 +14,17 @@ import java.util.*
             (Index("usuario_id"))
         ],
         foreignKeys = [
-            (ForeignKey(entity = Local::class, parentColumns = arrayOf("id"), childColumns = arrayOf("local_id"))),
-            (ForeignKey(entity = Pessoa::class, parentColumns = arrayOf("id"), childColumns = arrayOf("pessoa_id"))),
-            (ForeignKey(entity = Conta::class, parentColumns = arrayOf("id"), childColumns = arrayOf("conta_id"))),
-            (ForeignKey(entity = Usuario::class, parentColumns = arrayOf("id"), childColumns = arrayOf("usuario_id")))
+            (ForeignKey(entity = Local::class, parentColumns = arrayOf("id_local"), childColumns = arrayOf("local_id"))),
+            (ForeignKey(entity = Pessoa::class, parentColumns = arrayOf("id_local"), childColumns = arrayOf("pessoa_id"))),
+            (ForeignKey(entity = Conta::class, parentColumns = arrayOf("id_local"), childColumns = arrayOf("conta_id"))),
+            (ForeignKey(entity = Usuario::class, parentColumns = arrayOf("id_local"), childColumns = arrayOf("usuario_id")))
 
         ]
 )
 data class Lancamento(
         @PrimaryKey(autoGenerate = true)
+        @ColumnInfo(name = "id_local")
+        var idLocal: Long?,
         var id: Long?,
         @Ignore
         var local: Local?,
@@ -28,10 +32,11 @@ data class Lancamento(
         var pessoa: Pessoa?,
         @Ignore
         var conta: Conta?,
-        var dataExecucao: String?,
+        @ColumnInfo(name = "data_execucao")
+        var dataExecucao: Date?,
         var valor: Float?,
         @Ignore
-        var tipo: TipoLancamento?,
+        var tipo: Int,
         @Ignore
         var usuario: Usuario?,
         @Ignore
@@ -46,6 +51,7 @@ data class Lancamento(
             null,
             null,
             null,
+            0,
             null,
             null
             )
@@ -58,4 +64,24 @@ data class Lancamento(
     var contaId: Long? = conta?.id
     @ColumnInfo(name = "usuario_id")
     var usuarioId: String? = usuario?.id
+
+    fun tipoString(): String {
+        return when (tipo) {
+            1 -> "Debito"
+            2 -> "Crédito"
+            else -> { // Note the block
+                ""
+            }
+        }
+    }
+
+    fun tipoImage(): Int {
+        return when (tipo) {
+            1 -> R.drawable.ic_trending_up_black_24dp
+            2 -> R.drawable.ic_trending_down_black_24dp
+            else -> { // Note the block
+                R.drawable.ic_trending_up_black_24dp
+            }
+        }
+    }
 }

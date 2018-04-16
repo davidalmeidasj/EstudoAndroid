@@ -6,4 +6,12 @@
     <dimen name="nav_header_height">140dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="input_margin_top">16dp</dimen>
+
+    <dimen name="lanc_item_margem_horiz">12dp</dimen>
+    <dimen name="lanc_item_margem_vert">5dp</dimen>
+    <dimen name="lanc_item_margem_vert_longo">24dp</dimen>
+
+    <dimen name="tam_texto_peq">12sp</dimen>
+    <dimen name="tam_texto_norm">14sp</dimen>
+    <dimen name="tam_texto_grande">18sp</dimen>
 </resources>

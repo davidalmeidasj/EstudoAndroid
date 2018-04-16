@@ -9,14 +9,21 @@ interface DocumentoAnexoDao {
     fun getDocumentosAnexo(): Array<DocumentoAnexo?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertToken(token: DocumentoAnexo)
+    fun insertDocumentos(vararg documento: DocumentoAnexo)
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
-    fun updateDocumentoAnexo(token: DocumentoAnexo)
+    fun updateDocumentoAnexo(documento: DocumentoAnexo)
 
     @Delete
-    fun deleteDocumentoAnexo(token: DocumentoAnexo)
+    fun deleteDocumentoAnexo(documento: DocumentoAnexo)
 
     @Query("SELECT * FROM documentos_anexo WHERE id = :id")
-    fun getDocumentoAnexo(id: Long): Flowable<DocumentoAnexo>
+    fun getDocumentoAnexo(id: Long): DocumentoAnexo
+
+
+    @Query("SELECT * FROM documentos_anexo WHERE id = null")
+    fun getDocumentosAnexoNaoEnviados(): Array<DocumentoAnexo?>
+
+    @Query("SELECT * FROM documentos_anexo WHERE id_local = :idLocal")
+    fun getDocumentoAnexoLocal(idLocal: Long): DocumentoAnexo
 }

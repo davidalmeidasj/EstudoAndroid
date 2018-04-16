@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="10dp"
+    >
+
+    <TextView
+        android:id="@+id/lancItemData"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="@dimen/lanc_item_margem_horiz"
+        android:layout_marginTop="@dimen/lanc_item_margem_vert"
+        android:text="dd/mm/aaaa"
+        android:textSize="@dimen/tam_texto_peq"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/lancItemTipo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/lanc_item_margem_horiz"
+        android:layout_marginTop="@dimen/lanc_item_margem_vert"
+        android:text="Tipo de atividade"
+        android:textStyle="bold"
+        android:textSize="@dimen/tam_texto_norm"
+        app:layout_constraintLeft_toRightOf="@+id/lancItemImg"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/lancItemCliente"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Nome do Cliente"
+        android:textSize="@dimen/tam_texto_grande"
+        app:layout_constraintLeft_toLeftOf="@+id/lancItemTipo"
+        app:layout_constraintTop_toBottomOf="@+id/lancItemTipo" />
+
+    <TextView
+        android:id="@+id/lancItemValor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="R$ XX,XX"
+        android:textSize="@dimen/tam_texto_grande"
+        android:layout_marginBottom="@dimen/lanc_item_margem_vert_longo"
+        app:layout_constraintLeft_toLeftOf="@+id/lancItemCliente"
+        app:layout_constraintTop_toBottomOf="@+id/lancItemCliente"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <ImageView
+        android:id="@+id/lancItemImg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/lanc_item_margem_horiz"
+        android:src="?android:attr/actionModeCutDrawable"
+        android:textAppearance="?android:attr/textAppearanceButton"
+        app:layout_constraintBottom_toBottomOf="@id/lancItemCliente"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="@id/lancItemCliente" />
+
+</android.support.constraint.ConstraintLayout>

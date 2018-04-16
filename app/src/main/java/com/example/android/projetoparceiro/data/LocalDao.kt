@@ -8,14 +8,20 @@ import io.reactivex.Flowable
     fun getLocal(): Local?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertToken(token: Local)
+    fun insertLocal(vararg local: Local)
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
-    fun updateLocal(token: Local)
+    fun updateLocal(local: Local)
 
     @Delete
-    fun deleteLocal(token: Local)
+    fun deleteLocal(local: Local)
 
     @Query("SELECT * FROM local WHERE id = :id")
-    fun getLocal(id: Long): Flowable<Local>
+    fun getLocal(id: Long): Local
+
+    @Query("SELECT * FROM local WHERE id = null")
+    fun getLocalNaoEnviados(): Array<Local?>
+
+    @Query("SELECT * FROM local WHERE id_local = :idLocal")
+    fun getLocalLocal(idLocal: Long): Local
 }
