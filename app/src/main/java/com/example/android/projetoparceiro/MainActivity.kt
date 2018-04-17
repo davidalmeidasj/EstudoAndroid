@@ -1,18 +1,23 @@
 package com.example.android.projetoparceiro
 
 import android.content.Intent
+import android.database.Cursor
 import android.os.Bundle
 import android.support.design.widget.BottomNavigationView
 import android.support.design.widget.NavigationView
 import android.support.design.widget.Snackbar
+import android.support.v4.app.LoaderManager
+import android.support.v4.app.LoaderManager.LoaderCallbacks
+import android.support.v4.content.AsyncTaskLoader
+import android.support.v4.content.CursorLoader
+import android.support.v4.content.Loader
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.AdapterView
-import android.widget.LinearLayout
-import android.widget.ListView
-import android.widget.Toast
+import android.view.View
+import android.widget.*
 import com.example.android.projetoparceiro.adapter.LancamentoAdapter
 import com.example.android.projetoparceiro.data.AppDatabase
 import com.example.android.projetoparceiro.data.JsonData
@@ -27,7 +32,6 @@ import kotlinx.android.synthetic.main.nav_header_main.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import kotlin.collections.ArrayList
 
 class MainActivity : AbstractConnect(), NavigationView.OnNavigationItemSelectedListener {
 
@@ -37,11 +41,17 @@ class MainActivity : AbstractConnect(), NavigationView.OnNavigationItemSelectedL
 
     lateinit var listView: ListView
 
+    private val FORECAST_LOADER_ID = 0
 
     private lateinit var adapter: LancamentoAdapter
 
+    lateinit var mLoadingIndicator: ProgressBar
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        appDatabase = AppDatabase.getTokenDatabase(this)
+
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
@@ -58,6 +68,10 @@ class MainActivity : AbstractConnect(), NavigationView.OnNavigationItemSelectedL
         nav_view.setNavigationItemSelectedListener(this)
 
         R.id.nav_logout
+
+        mLoadingIndicator = pb_loading_indicator
+
+        mLoadingIndicator.visibility = View.VISIBLE
     }
 
 
@@ -77,8 +91,6 @@ class MainActivity : AbstractConnect(), NavigationView.OnNavigationItemSelectedL
     override fun onStart() {
         super.onStart()
 
-        appDatabase = AppDatabase.getTokenDatabase(this)
-
         var token = appDatabase.tokenDao().getToken()
 
         if (token != null) {
@@ -89,10 +101,60 @@ class MainActivity : AbstractConnect(), NavigationView.OnNavigationItemSelectedL
             defineBottomNavigationView()
 
             mergeDataBase()
+
+            supportLoaderManager.initLoader(FORECAST_LOADER_ID, null, mLoaderCallback)
         } else {
             logout()
         }
 
+    }
+
+    private val mLoaderCallback = object: LoaderCallbacks<Array<String>> {
+
+        override fun onCreateLoader(id: Int, args: Bundle?): Loader<Array<String>> {
+            return object: AsyncTaskLoader<Array<String>>(this@MainActivity) {
+
+                override fun loadInBackground(): Array<String>? {
+                    var jsondata = this@MainActivity.appDatabase.jsonDataDao().getJsonData()
+
+                    val lancamentos = Gson().fromJson<Array<Lancamento>>(jsondata[0].jsonData, Lancamento::class.java)
+
+                    lancamentos.forEach {
+                        Log.d("test", it.dataExecucao.toString())
+                    }
+
+                    return arrayOf("", "")
+                }
+
+                internal var mWeatherData: Array<String>? = null
+
+                /**
+                 * Subclasses of AsyncTaskLoader must implement this to take care of loading their data.
+                 */
+                override fun onStartLoading() {
+                    mLoadingIndicator?.visibility = View.VISIBLE
+                }
+
+                /**
+                 * Sends the result of the load to the registered listener.
+                 *
+                 * @param data The result of the load
+                 */
+                override fun deliverResult(data: Array<String>?) {
+                    mWeatherData = data
+                    super.deliverResult(data)
+                }
+            }
+        }
+
+        override fun onLoadFinished(loader: Loader<Array<String>>, data: Array<String>?) {
+            mLoadingIndicator.visibility = View.INVISIBLE
+            //atualizar banco
+        }
+
+        override fun onLoaderReset(loader: Loader<Array<String>>) {
+
+        }
     }
 
     private fun mergeDataBase() {
@@ -128,6 +190,8 @@ class MainActivity : AbstractConnect(), NavigationView.OnNavigationItemSelectedL
                         }
 
                         preencherListViewLancamentos(lancamentos)
+
+                        mLoadingIndicator.visibility = View.INVISIBLE
                     }
                     401 -> {
 
