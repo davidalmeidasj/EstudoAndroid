@@ -18,11 +18,14 @@ import android.arch.persistence.room.*
     fun deleteConta(conta: Conta)
 
     @Query("SELECT * FROM contas WHERE id = :id")
-    fun getConta(id: Long): Conta
+    fun getConta(id: Long?): Conta
 
     @Query("SELECT * FROM contas WHERE id = null")
     fun getContasNaoEnviados(): Array<Conta?>
 
     @Query("SELECT * FROM contas WHERE id_local = :idLocal")
     fun getContaLocal(idLocal: Long): Conta
+
+    @Query("DELETE FROM contas")
+    fun delete()
 }

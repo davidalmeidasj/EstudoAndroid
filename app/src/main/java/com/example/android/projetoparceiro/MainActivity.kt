@@ -1,15 +1,12 @@
 package com.example.android.projetoparceiro
 
 import android.content.Intent
-import android.database.Cursor
 import android.os.Bundle
 import android.support.design.widget.BottomNavigationView
 import android.support.design.widget.NavigationView
 import android.support.design.widget.Snackbar
-import android.support.v4.app.LoaderManager
 import android.support.v4.app.LoaderManager.LoaderCallbacks
 import android.support.v4.content.AsyncTaskLoader
-import android.support.v4.content.CursorLoader
 import android.support.v4.content.Loader
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
@@ -76,14 +73,16 @@ class MainActivity : AbstractConnect(), NavigationView.OnNavigationItemSelectedL
 
 
     fun logout() {
+        appDatabase.documentoAnexoDao().delete()
+        appDatabase.lancamentoDao().delete()
+        appDatabase.contaDao().delete()
+        appDatabase.localDao().delete()
+        appDatabase.pessoaDao().delete()
+        appDatabase.tokenDao().delete()
+
         val mainActivity = Intent(applicationContext, LoginActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
         startActivity(mainActivity)
-
-        var tokenString = appDatabase.tokenDao().getToken()
-
-        if (tokenString != null)
-            appDatabase.tokenDao().deleteToken(tokenString)
 
         finish()
     }
@@ -115,34 +114,23 @@ class MainActivity : AbstractConnect(), NavigationView.OnNavigationItemSelectedL
             return object: AsyncTaskLoader<Array<String>>(this@MainActivity) {
 
                 override fun loadInBackground(): Array<String>? {
-                    var jsondata = this@MainActivity.appDatabase.jsonDataDao().getJsonData()
 
-                    val lancamentos = Gson().fromJson<Array<Lancamento>>(jsondata[0].jsonData, Lancamento::class.java)
+                    var dataLancamento = this@MainActivity.appDatabase.lancamentoDao().getLancamentos()
 
-                    lancamentos.forEach {
-                        Log.d("test", it.dataExecucao.toString())
+                    if (dataLancamento.isEmpty()) {
+                        popularBancoPrimeiraVez()
+                    } else {
+                        Log.d("LANCAMENTOSLANCAMENTOS", "Verificar quais não foram sincronizados e enviar e verificar a edição")
                     }
 
                     return arrayOf("", "")
                 }
-
-                internal var mWeatherData: Array<String>? = null
 
                 /**
                  * Subclasses of AsyncTaskLoader must implement this to take care of loading their data.
                  */
                 override fun onStartLoading() {
                     mLoadingIndicator?.visibility = View.VISIBLE
-                }
-
-                /**
-                 * Sends the result of the load to the registered listener.
-                 *
-                 * @param data The result of the load
-                 */
-                override fun deliverResult(data: Array<String>?) {
-                    mWeatherData = data
-                    super.deliverResult(data)
                 }
             }
         }
@@ -154,6 +142,39 @@ class MainActivity : AbstractConnect(), NavigationView.OnNavigationItemSelectedL
 
         override fun onLoaderReset(loader: Loader<Array<String>>) {
 
+        }
+    }
+
+    private fun popularBancoPrimeiraVez() {
+        var jsondata = this@MainActivity.appDatabase.jsonDataDao().getJsonData()
+
+        val lancamentos = Gson().fromJson<Array<Lancamento>>(jsondata[0].jsonData, Lancamento::class.java)
+
+        lancamentos.forEach {
+            this.appDatabase.contaDao().insertContas(it.conta)
+
+            var conta = this.appDatabase.contaDao().getConta(it.conta?.id)
+
+            this.appDatabase.localDao().insertLocal(it.local)
+
+            var local = this.appDatabase.localDao().getLocal(it.local?.id)
+
+            this.appDatabase.pessoaDao().insertPessoas(it.pessoa)
+
+            var pessoa = this.appDatabase.pessoaDao().getPessoa(it.pessoa?.id)
+
+            it.contaId = conta.idLocal
+            it.localId = local.idLocal
+            it.pessoaId = pessoa.idLocal
+
+            this.appDatabase.lancamentoDao().insertLancamentos(it)
+
+            var lancamento = this.appDatabase.lancamentoDao().getLancamento(it.id)
+
+            it.documentos?.forEach {
+                it.lancamentoId = lancamento.idLocal
+                this.appDatabase.documentoAnexoDao().insertDocumentos(it)
+            }
         }
     }
 

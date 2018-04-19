@@ -14,7 +14,11 @@ class Usuario(
     var name: String?,
     var email: String?,
     var password: String?,
-    val created_at: String?,
+    val created_at: Date?,
     var newPassword: String?,
-    var token: String?
+    var token: String?,
+    @ColumnInfo(name = "criado_em")
+    var criadoEm: Date?,
+    @ColumnInfo(name = "editado_em")
+    var editadoEm: Date?
 )

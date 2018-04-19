@@ -1,6 +1,7 @@
 package com.example.android.projetoparceiro.data
 
 import android.arch.persistence.room.*
+import java.util.*
 
 @Entity(
         tableName = "pessoas",
@@ -22,9 +23,15 @@ class Pessoa(
         @Ignore
         var tipoCadastro: TipoCadastro?,
         @Ignore
-        var usuario: Usuario?
+        var usuario: Usuario?,
+        @ColumnInfo(name = "criado_em")
+        var criadoEm: Date?,
+        @ColumnInfo(name = "editado_em")
+        var editadoEm: Date?
 ) {
     constructor() : this(
+            null,
+            null,
             null,
             null,
             null,

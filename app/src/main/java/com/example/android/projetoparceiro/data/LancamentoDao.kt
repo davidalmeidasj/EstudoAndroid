@@ -1,7 +1,6 @@
 package com.example.android.projetoparceiro.data
 
 import android.arch.persistence.room.*
-import io.reactivex.Flowable
 
 @Dao
 interface LancamentoDao {
@@ -10,7 +9,7 @@ interface LancamentoDao {
     fun getLancamentos(): Array<Lancamento?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertLancamentos(vararg lancamento: Lancamento)
+    fun insertLancamentos(lancamento: Lancamento)
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
     fun updateLancamento(lancamento: Lancamento)
@@ -19,11 +18,14 @@ interface LancamentoDao {
     fun deleteLancamento(lancamento: Lancamento)
 
     @Query("SELECT * FROM lancamentos WHERE id = :id")
-    fun getLancamento(id: Long): Lancamento
+    fun getLancamento(id: Long?): Lancamento
 
     @Query("SELECT * FROM lancamentos WHERE id = null")
     fun getLancamentosNaoEnviados(): Array<Lancamento?>
 
     @Query("SELECT * FROM lancamentos WHERE id_local = :idLocal")
     fun getLancamentoLocal(idLocal: Long): Lancamento
+
+    @Query("DELETE FROM lancamentos")
+    fun delete()
 }

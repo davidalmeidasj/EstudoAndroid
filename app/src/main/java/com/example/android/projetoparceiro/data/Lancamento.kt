@@ -1,6 +1,7 @@
 package com.example.android.projetoparceiro.data
 
 import android.arch.persistence.room.*
+import android.arch.persistence.room.ForeignKey.CASCADE
 import com.example.android.projetoparceiro.R
 import com.example.android.projetoparceiro.util.DateConverter
 import java.util.*
@@ -14,10 +15,10 @@ import java.util.*
             (Index("usuario_id"))
         ],
         foreignKeys = [
-            (ForeignKey(entity = Local::class, parentColumns = arrayOf("id_local"), childColumns = arrayOf("local_id"))),
-            (ForeignKey(entity = Pessoa::class, parentColumns = arrayOf("id_local"), childColumns = arrayOf("pessoa_id"))),
-            (ForeignKey(entity = Conta::class, parentColumns = arrayOf("id_local"), childColumns = arrayOf("conta_id"))),
-            (ForeignKey(entity = Usuario::class, parentColumns = arrayOf("id_local"), childColumns = arrayOf("usuario_id")))
+            (ForeignKey(entity = Local::class, parentColumns = arrayOf("id_local"), childColumns = arrayOf("local_id"), onDelete = CASCADE)),
+            (ForeignKey(entity = Pessoa::class, parentColumns = arrayOf("id_local"), childColumns = arrayOf("pessoa_id"), onDelete = CASCADE)),
+            (ForeignKey(entity = Conta::class, parentColumns = arrayOf("id_local"), childColumns = arrayOf("conta_id"), onDelete = CASCADE)),
+            (ForeignKey(entity = Usuario::class, parentColumns = arrayOf("id_local"), childColumns = arrayOf("usuario_id"), onDelete = CASCADE))
 
         ]
 )
@@ -40,7 +41,11 @@ data class Lancamento(
         @Ignore
         var usuario: Usuario?,
         @Ignore
-        var documentos: ArrayList<DocumentoAnexo>?
+        var documentos: ArrayList<DocumentoAnexo>?,
+        @ColumnInfo(name = "criado_em")
+        var criadoEm: Date?,
+        @ColumnInfo(name = "editado_em")
+        var editadoEm: Date?
 ) {
 
     constructor() : this(
@@ -52,6 +57,8 @@ data class Lancamento(
             null,
             null,
             0,
+            null,
+            null,
             null,
             null
             )

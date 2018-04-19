@@ -24,6 +24,9 @@ import io.reactivex.Flowable
     @Query("SELECT * FROM tokens WHERE token = :token")
     fun getToken(token: String): Token
 
+    @Query("DELETE FROM tokens")
+    fun delete()
+
     /**
      * Counts the number of tokens in the table.
      *

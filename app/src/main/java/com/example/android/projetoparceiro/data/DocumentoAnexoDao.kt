@@ -1,7 +1,6 @@
 package com.example.android.projetoparceiro.data
 
 import android.arch.persistence.room.*
-import io.reactivex.Flowable
 
 @Dao
 interface DocumentoAnexoDao {
@@ -9,7 +8,7 @@ interface DocumentoAnexoDao {
     fun getDocumentosAnexo(): Array<DocumentoAnexo?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertDocumentos(vararg documento: DocumentoAnexo)
+    fun insertDocumentos(documento: DocumentoAnexo)
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
     fun updateDocumentoAnexo(documento: DocumentoAnexo)
@@ -26,4 +25,7 @@ interface DocumentoAnexoDao {
 
     @Query("SELECT * FROM documentos_anexo WHERE id_local = :idLocal")
     fun getDocumentoAnexoLocal(idLocal: Long): DocumentoAnexo
+
+    @Query("DELETE FROM documentos_anexo")
+    fun delete()
 }

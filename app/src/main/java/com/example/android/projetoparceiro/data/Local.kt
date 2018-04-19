@@ -20,9 +20,15 @@ class Local(
         var id: Long?,
         var nome: String?,
         @Ignore
-        var usuario: Usuario?
+        var usuario: Usuario?,
+        @ColumnInfo(name = "criado_em")
+        var criadoEm: Date?,
+        @ColumnInfo(name = "editado_em")
+        var editadoEm: Date?
 ) {
     constructor() : this(
+            null,
+            null,
             null,
             null,
             null,
