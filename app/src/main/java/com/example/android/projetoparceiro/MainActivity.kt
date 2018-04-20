@@ -130,7 +130,7 @@ class MainActivity : AbstractConnect(), NavigationView.OnNavigationItemSelectedL
                  * Subclasses of AsyncTaskLoader must implement this to take care of loading their data.
                  */
                 override fun onStartLoading() {
-                    mLoadingIndicator?.visibility = View.VISIBLE
+                    //TODO inicar processo
                 }
             }
         }
@@ -149,8 +149,10 @@ class MainActivity : AbstractConnect(), NavigationView.OnNavigationItemSelectedL
         var jsondata = this@MainActivity.appDatabase.jsonDataDao().getJsonData()
 
         val lancamentos = Gson().fromJson<Array<Lancamento>>(jsondata[0].jsonData, Lancamento::class.java)
+        Log.d("LANCAMENTOSLANCAMENTOS", "PRÉ DADO")
 
         lancamentos.forEach {
+            Log.d("LANCAMENTOSLANCAMENTOS", "ENTRANDO DADO")
             this.appDatabase.contaDao().insertContas(it.conta)
 
             var conta = this.appDatabase.contaDao().getConta(it.conta?.id)
@@ -179,54 +181,63 @@ class MainActivity : AbstractConnect(), NavigationView.OnNavigationItemSelectedL
     }
 
     private fun mergeDataBase() {
-        val response: Call<Array<Lancamento>> = NetworkUtil().getAuthenticatedRetrofit(tokenString).getList()
+        var lancamentosDb = appDatabase.lancamentoDao().getLancamentos()
+        if (isOnline() && lancamentosDb.isEmpty()) {
 
-        response.enqueue(object : Callback<Array<Lancamento>> {
-            override fun onFailure(call: Call<Array<Lancamento>>?, t: Throwable?) {
+            val response: Call<Array<Lancamento>> = NetworkUtil().getAuthenticatedRetrofit(tokenString).getList()
 
-            }
+            response.enqueue(object : Callback<Array<Lancamento>> {
+                override fun onFailure(call: Call<Array<Lancamento>>?, t: Throwable?) {
 
-            override fun onResponse(call: Call<Array<Lancamento>>?, response: Response<Array<Lancamento>>?) {
-                val responseCode = response?.code()
+                }
 
-                when (responseCode) {
-                    200 -> {
-                        val lancamentosStringJson = Gson().toJson(response.body())
+                override fun onResponse(call: Call<Array<Lancamento>>?, response: Response<Array<Lancamento>>?) {
+                    val responseCode = response?.code()
 
-                        val lancamentos: Array<Lancamento>? = response.body()
+                    when (responseCode) {
+                        200 -> {
+                            val lancamentosStringJson = Gson().toJson(response.body())
 
-                        val jsonDataDao = appDatabase.jsonDataDao()
+                            val lancamentos: Array<Lancamento>? = response.body()
 
-                        val jsonObject: Array<JsonData> = jsonDataDao.getJsonData()
+                            val jsonDataDao = appDatabase.jsonDataDao()
 
-                        if (jsonObject.isEmpty() || (jsonObject.size > 1 && jsonObject[0].jsonData == lancamentosStringJson)) {
-                            //Popular banco local
+                            val jsonObject: Array<JsonData> = jsonDataDao.getJsonData()
 
-                            jsonObject.forEach {
-                                jsonDataDao.deleteJsonData(it)
+                            if (jsonObject.isEmpty() || (jsonObject.size > 1 && jsonObject[0].jsonData == lancamentosStringJson)) {
+                                //Popular banco local
+
+                                jsonObject.forEach {
+                                    jsonDataDao.deleteJsonData(it)
+                                }
+
+                                jsonDataDao.insertJsonData(JsonData(null, lancamentosStringJson))
+
                             }
 
-                            jsonDataDao.insertJsonData(JsonData(null, lancamentosStringJson))
+                            preencherListViewLancamentos(lancamentos)
 
+                            mLoadingIndicator.visibility = View.INVISIBLE
                         }
+                        401 -> {
 
-                        preencherListViewLancamentos(lancamentos)
-
-                        mLoadingIndicator.visibility = View.INVISIBLE
-                    }
-                    401 -> {
-
-                        if (isOnline()) {
-                            logout()
-                        } else {
-                            showSnackBarMessage("Não há conexão com a internet.")
+                            if (isOnline()) {
+                                logout()
+                            } else {
+                                showSnackBarMessage("Não há conexão com a internet.")
+                            }
                         }
+                        else -> showSnackBarMessage("Tente novamente mais tarde")
                     }
-                    else -> showSnackBarMessage("Tente novamente mais tarde")
                 }
-            }
 
-        })
+            })
+        } else {
+
+            preencherListViewLancamentos(lancamentosDb)
+
+            mLoadingIndicator.visibility = View.INVISIBLE
+        }
     }
 
     private fun preencherListViewLancamentos(lancamentos: Array<Lancamento>?) {
@@ -296,8 +307,8 @@ class MainActivity : AbstractConnect(), NavigationView.OnNavigationItemSelectedL
                         val name = user?.name
                         val email = user?.email
 
-                        tv_email_usuario.text = email
-                        tv_nome_usuario.text = name
+                        tv_email_usuario.text = email ?: ""
+                        tv_nome_usuario.text = name ?: ""
                     }
                     401 -> logout()
                     else -> showSnackBarMessage("Tente novamente mais tarde")

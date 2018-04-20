@@ -6,7 +6,7 @@ import android.arch.persistence.room.*
 interface LancamentoDao {
 
     @Query("select * from lancamentos")
-    fun getLancamentos(): Array<Lancamento?>
+    fun getLancamentos(): Array<Lancamento>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertLancamentos(lancamento: Lancamento)
