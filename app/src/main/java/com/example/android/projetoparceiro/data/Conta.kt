@@ -5,14 +5,7 @@ import java.util.*
 
 
 @Entity(
-        tableName = "contas",
-        indices = [
-            (Index("usuario_id"))
-        ],
-        foreignKeys = [
-                (android.arch.persistence.room.ForeignKey(entity = com.example.android.projetoparceiro.data.Usuario::class, parentColumns = kotlin.arrayOf("id_local"), childColumns = kotlin.arrayOf("usuario_id")))
-
-        ]
+        tableName = "contas"
 )
 class Conta(
     @PrimaryKey(autoGenerate = true)
@@ -26,8 +19,8 @@ class Conta(
     var usuario: Usuario?,
     @ColumnInfo(name = "criado_em")
     var criadoEm: Date?,
-    @ColumnInfo(name = "editado_em")
-    var editadoEm: Date?
+    @ColumnInfo(name = "modificado_em")
+    var modificadoEm: Date?
 ) {
     constructor() : this(
             null,
@@ -38,5 +31,4 @@ class Conta(
             null,
             null
     )
-    var usuario_id: String? = usuario?.id
 }

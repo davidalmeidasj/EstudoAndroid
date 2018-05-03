@@ -13,7 +13,7 @@ object NumeroUtil {
         regex = Regex(exp)
     }
 
-    fun formatarMoeda(valor: Number): String {
+    fun formatarMoeda(valor: Float): String {
         val formatador = NumberFormat.getCurrencyInstance()
         return formatador.format(valor)
     }

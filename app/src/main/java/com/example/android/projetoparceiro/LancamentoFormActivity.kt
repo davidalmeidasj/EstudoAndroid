@@ -1,19 +1,27 @@
 package com.example.android.projetoparceiro
 
 import android.app.Activity
-import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import com.example.android.projetoparceiro.data.AppDatabase
+import com.example.android.projetoparceiro.data.Lancamento
 import com.example.android.projetoparceiro.util.DataUtil
 import kotlinx.android.synthetic.main.activity_lancamento_form.*
 import java.util.*
 
 class LancamentoFormActivity : AppCompatActivity() {
 
+    lateinit var lancamento: Lancamento
+    private lateinit var appDatabase: AppDatabase
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_lancamento_form)
 
+
+        appDatabase = AppDatabase.getAppDatabase(this)
+
+        lancamento = appDatabase.lancamentoDao().getLancamento(intent.getLongExtra("LANCAMENTO_ID", 0))
 
         lancDataPickerBtn.setOnClickListener {
             showDatePickerDialog()

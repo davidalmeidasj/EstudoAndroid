@@ -26,6 +26,6 @@ class DocumentoAnexo (
     var lancamentoId: Long?,
     @ColumnInfo(name = "criado_em")
     var criadoEm: Date?,
-    @ColumnInfo(name = "editado_em")
-    var editadoEm: Date?
+    @ColumnInfo(name = "modificado_em")
+    var modificadoEm: Date?
 )

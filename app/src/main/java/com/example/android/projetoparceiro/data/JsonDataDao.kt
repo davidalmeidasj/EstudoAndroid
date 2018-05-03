@@ -15,4 +15,8 @@ interface JsonDataDao {
 
     @Query("SELECT * FROM json_data")
     fun getJsonData(): Array<JsonData>
+
+
+    @Query("DELETE FROM json_data")
+    fun delete()
 }

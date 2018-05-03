@@ -19,6 +19,7 @@ import com.example.android.projetoparceiro.adapter.LancamentoAdapter
 import com.example.android.projetoparceiro.data.AppDatabase
 import com.example.android.projetoparceiro.data.JsonData
 import com.example.android.projetoparceiro.data.Lancamento
+import com.example.android.projetoparceiro.data.Usuario
 import com.example.android.projetoparceiro.model.User
 import com.example.android.projetoparceiro.network.NetworkUtil
 import com.google.gson.Gson
@@ -29,6 +30,7 @@ import kotlinx.android.synthetic.main.nav_header_main.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.util.*
 
 class MainActivity : AbstractConnect(), NavigationView.OnNavigationItemSelectedListener {
 
@@ -47,7 +49,7 @@ class MainActivity : AbstractConnect(), NavigationView.OnNavigationItemSelectedL
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        appDatabase = AppDatabase.getTokenDatabase(this)
+        appDatabase = AppDatabase.getAppDatabase(this)
 
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
@@ -73,18 +75,23 @@ class MainActivity : AbstractConnect(), NavigationView.OnNavigationItemSelectedL
 
 
     fun logout() {
-        appDatabase.documentoAnexoDao().delete()
-        appDatabase.lancamentoDao().delete()
-        appDatabase.contaDao().delete()
-        appDatabase.localDao().delete()
-        appDatabase.pessoaDao().delete()
-        appDatabase.tokenDao().delete()
+        //clearDataBase()
 
         val mainActivity = Intent(applicationContext, LoginActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
         startActivity(mainActivity)
 
         finish()
+    }
+
+    private fun clearDataBase() {
+        appDatabase.jsonDataDao().delete()
+        appDatabase.usuarioDao().delete()
+        appDatabase.documentoAnexoDao().delete()
+        appDatabase.lancamentoDao().delete()
+        appDatabase.contaDao().delete()
+        appDatabase.localDao().delete()
+        appDatabase.pessoaDao().delete()
     }
 
     override fun onStart() {
@@ -95,11 +102,7 @@ class MainActivity : AbstractConnect(), NavigationView.OnNavigationItemSelectedL
         if (token != null) {
             tokenString = token.token
 
-            setUserPerfil()
-
             defineBottomNavigationView()
-
-            mergeDataBase()
 
             supportLoaderManager.initLoader(FORECAST_LOADER_ID, null, mLoaderCallback)
         } else {
@@ -114,15 +117,6 @@ class MainActivity : AbstractConnect(), NavigationView.OnNavigationItemSelectedL
             return object: AsyncTaskLoader<Array<String>>(this@MainActivity) {
 
                 override fun loadInBackground(): Array<String>? {
-
-                    var dataLancamento = this@MainActivity.appDatabase.lancamentoDao().getLancamentos()
-
-                    if (dataLancamento.isEmpty()) {
-                        popularBancoPrimeiraVez()
-                    } else {
-                        Log.d("LANCAMENTOSLANCAMENTOS", "Verificar quais não foram sincronizados e enviar e verificar a edição")
-                    }
-
                     return arrayOf("", "")
                 }
 
@@ -130,13 +124,13 @@ class MainActivity : AbstractConnect(), NavigationView.OnNavigationItemSelectedL
                  * Subclasses of AsyncTaskLoader must implement this to take care of loading their data.
                  */
                 override fun onStartLoading() {
-                    //TODO inicar processo
+
+                    setUserPerfil()
                 }
             }
         }
 
         override fun onLoadFinished(loader: Loader<Array<String>>, data: Array<String>?) {
-            mLoadingIndicator.visibility = View.INVISIBLE
             //atualizar banco
         }
 
@@ -146,34 +140,42 @@ class MainActivity : AbstractConnect(), NavigationView.OnNavigationItemSelectedL
     }
 
     private fun popularBancoPrimeiraVez() {
-        var jsondata = this@MainActivity.appDatabase.jsonDataDao().getJsonData()
 
-        val lancamentos = Gson().fromJson<Array<Lancamento>>(jsondata[0].jsonData, Lancamento::class.java)
-        Log.d("LANCAMENTOSLANCAMENTOS", "PRÉ DADO")
+        val jsondata = this@MainActivity.appDatabase.jsonDataDao().getJsonData()
 
-        lancamentos.forEach {
-            Log.d("LANCAMENTOSLANCAMENTOS", "ENTRANDO DADO")
-            this.appDatabase.contaDao().insertContas(it.conta)
+        var jsonDatData = "[]"
 
-            var conta = this.appDatabase.contaDao().getConta(it.conta?.id)
+        if (jsondata.isNotEmpty()) {
+            jsonDatData = jsondata[0].jsonData
+        }
 
-            this.appDatabase.localDao().insertLocal(it.local)
+        val lancamentos = Gson().fromJson<Array<Lancamento>>(jsonDatData, Array<Lancamento>::class.java)
 
-            var local = this.appDatabase.localDao().getLocal(it.local?.id)
+        lancamentos.forEach { itLancamento ->
 
-            this.appDatabase.pessoaDao().insertPessoas(it.pessoa)
+            this.appDatabase.contaDao().insertContas(itLancamento.conta)
 
-            var pessoa = this.appDatabase.pessoaDao().getPessoa(it.pessoa?.id)
+            val conta = this.appDatabase.contaDao().getConta(itLancamento.conta.id)
+            itLancamento.contaId = conta.idLocal
 
-            it.contaId = conta.idLocal
-            it.localId = local.idLocal
-            it.pessoaId = pessoa.idLocal
+            itLancamento.local?.let {
 
-            this.appDatabase.lancamentoDao().insertLancamentos(it)
+                this.appDatabase.localDao().insertLocal(it)
+                val local = this.appDatabase.localDao().getLocal(it.id)
+                itLancamento.localId = local.idLocal
+            }
 
-            var lancamento = this.appDatabase.lancamentoDao().getLancamento(it.id)
+            itLancamento.pessoa?.let {
+                this.appDatabase.pessoaDao().insertPessoas(it)
+                val pessoa = this.appDatabase.pessoaDao().getPessoa(it.id)
+                itLancamento.pessoaId = pessoa.idLocal
+            }
 
-            it.documentos?.forEach {
+            this.appDatabase.lancamentoDao().insertLancamentos(itLancamento)
+
+            val lancamento = this.appDatabase.lancamentoDao().getLancamento(itLancamento.id)
+
+            itLancamento.documentos?.forEach {
                 it.lancamentoId = lancamento.idLocal
                 this.appDatabase.documentoAnexoDao().insertDocumentos(it)
             }
@@ -181,7 +183,9 @@ class MainActivity : AbstractConnect(), NavigationView.OnNavigationItemSelectedL
     }
 
     private fun mergeDataBase() {
-        var lancamentosDb = appDatabase.lancamentoDao().getLancamentos()
+        val lancamentosDb = appDatabase.lancamentoDao().getLancamentos()
+
+        //verifica se está online e se o banco de lançamento esta vazio para popular pela primeira vez
         if (isOnline() && lancamentosDb.isEmpty()) {
 
             val response: Call<Array<Lancamento>> = NetworkUtil().getAuthenticatedRetrofit(tokenString).getList()
@@ -196,28 +200,34 @@ class MainActivity : AbstractConnect(), NavigationView.OnNavigationItemSelectedL
 
                     when (responseCode) {
                         200 -> {
+                            //recupera todos os lancamentos
                             val lancamentosStringJson = Gson().toJson(response.body())
 
+                            //guarda os lancamentos em array de lancamentos
                             val lancamentos: Array<Lancamento>? = response.body()
 
+                            //json Dao
                             val jsonDataDao = appDatabase.jsonDataDao()
 
+                            // Verificar se o json é diferente ou vaziol
                             val jsonObject: Array<JsonData> = jsonDataDao.getJsonData()
 
                             if (jsonObject.isEmpty() || (jsonObject.size > 1 && jsonObject[0].jsonData == lancamentosStringJson)) {
                                 //Popular banco local
 
+                                //delete todos se existir algum
                                 jsonObject.forEach {
                                     jsonDataDao.deleteJsonData(it)
                                 }
 
+                                // add o mais recente
                                 jsonDataDao.insertJsonData(JsonData(null, lancamentosStringJson))
 
                             }
 
                             preencherListViewLancamentos(lancamentos)
 
-                            mLoadingIndicator.visibility = View.INVISIBLE
+                            popularBancoPrimeiraVez()
                         }
                         401 -> {
 
@@ -232,11 +242,14 @@ class MainActivity : AbstractConnect(), NavigationView.OnNavigationItemSelectedL
                 }
 
             })
-        } else {
+        } else if (isOnline()) {
+
+            Log.d("LANCAMENTOSLANCAMENTOS", "Verificar quais não foram sincronizados e enviar e verificar a edição")
 
             preencherListViewLancamentos(lancamentosDb)
 
-            mLoadingIndicator.visibility = View.INVISIBLE
+        } else {
+            preencherListViewLancamentos(lancamentosDb)
         }
     }
 
@@ -252,6 +265,8 @@ class MainActivity : AbstractConnect(), NavigationView.OnNavigationItemSelectedL
         if (lancamentos != null) {
             setLancamentoListViewHome(arrayListLancamento)
         }
+
+        mLoadingIndicator.visibility = View.INVISIBLE
     }
 
 
@@ -259,7 +274,7 @@ class MainActivity : AbstractConnect(), NavigationView.OnNavigationItemSelectedL
         listView = lv_list
     }
 
-    private fun setLancamentoListViewHome(lancamento: ArrayList<Lancamento>) {
+    private fun setLancamentoListViewHome(lancamentos: ArrayList<Lancamento>) {
         val paramsListView: LinearLayout.LayoutParams = listView.layoutParams as LinearLayout.LayoutParams
 
         paramsListView.setMargins(
@@ -271,21 +286,21 @@ class MainActivity : AbstractConnect(), NavigationView.OnNavigationItemSelectedL
 
         listView.layoutParams = paramsListView
 
-        adapter = LancamentoAdapter(lancamento, applicationContext)
+        adapter = LancamentoAdapter(lancamentos, applicationContext)
 
         listView.adapter = adapter
 
         listView.onItemClickListener = AdapterView.OnItemClickListener { parent, view, position, id ->
-            val dataModel = lancamento[position]
+            val dataModel = lancamentos[position]
 
-            val mainActivity = Intent(applicationContext, LancamentoFormActivity::class.java)
+            val formLancamentoActivity = Intent(applicationContext, LancamentoFormActivity::class.java)
 
-            var idLancamento = dataModel.id
+            val idLancamento = dataModel.id
 
-            startActivity(mainActivity)
+            formLancamentoActivity.putExtra("LANCAMENTO_ID", idLancamento)
+
+            startActivity(formLancamentoActivity)
         }
-
-
     }
 
     private fun setUserPerfil() {
@@ -304,15 +319,28 @@ class MainActivity : AbstractConnect(), NavigationView.OnNavigationItemSelectedL
 
                         val user: User? = response.body()
 
-                        val name = user?.name
+                        val name = user?.firstName + " " + user?.lastName
                         val email = user?.email
 
-                        tv_email_usuario.text = email ?: ""
-                        tv_nome_usuario.text = name ?: ""
+                        tv_email_usuario.text = email
+                        tv_nome_usuario.text = name
+
+                        var usuario = appDatabase.usuarioDao().getUsuario()
+                        if (usuario?.email != user?.email) {
+
+                            clearDataBase()
+
+                            var novoUsuario = Usuario(null, UUID.randomUUID().toString(), user?.firstName + " " + user?.lastName, user?.email, null, null, null, null, null, null)
+
+                            appDatabase.usuarioDao().insertUsuario(novoUsuario)
+                        }
                     }
+
                     401 -> logout()
                     else -> showSnackBarMessage("Tente novamente mais tarde")
                 }
+
+                mergeDataBase()
             }
 
         })

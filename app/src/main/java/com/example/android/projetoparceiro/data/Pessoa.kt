@@ -4,14 +4,7 @@ import android.arch.persistence.room.*
 import java.util.*
 
 @Entity(
-        tableName = "pessoas",
-        indices = [
-            Index("usuario_id")
-        ],
-        foreignKeys = [
-            (android.arch.persistence.room.ForeignKey(entity = com.example.android.projetoparceiro.data.Usuario::class, parentColumns = kotlin.arrayOf("id_local"), childColumns = kotlin.arrayOf("usuario_id")))
-
-        ]
+        tableName = "pessoas"
 )
 class Pessoa(
         @PrimaryKey(autoGenerate = true)
@@ -26,8 +19,8 @@ class Pessoa(
         var usuario: Usuario?,
         @ColumnInfo(name = "criado_em")
         var criadoEm: Date?,
-        @ColumnInfo(name = "editado_em")
-        var editadoEm: Date?
+        @ColumnInfo(name = "modificado_em")
+        var modificadoEm: Date?
 ) {
     constructor() : this(
             null,
@@ -39,5 +32,4 @@ class Pessoa(
             null,
             null
     )
-    var usuario_id: String? = usuario?.id
 }

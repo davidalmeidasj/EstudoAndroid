@@ -52,12 +52,13 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun localDao(): LocalDao
     abstract fun pessoaDao(): PessoaDao
     abstract fun jsonDataDao(): JsonDataDao
+    abstract fun usuarioDao(): UsuarioDao
 
     companion object {
 
         @Volatile private var INSTANCE: AppDatabase? = null
 
-        fun getTokenDatabase(context: Context): AppDatabase {
+        fun getAppDatabase(context: Context): AppDatabase {
             if (INSTANCE == null) {
 
                 INSTANCE = Room.databaseBuilder<AppDatabase>(context.applicationContext,

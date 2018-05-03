@@ -7,17 +7,17 @@ import io.reactivex.Flowable
 interface UsuarioDao {
 
     @Query("select * from usuarios")
-    fun getUsuarios(): Array<Usuario>?
+    fun getUsuario(): Usuario?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertToken(token: Usuario)
+    fun insertUsuario(usuario: Usuario)
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
-    fun updateUsuario(token: Usuario)
+    fun updateUsuario(usuario: Usuario)
 
     @Delete
-    fun deleteUsuario(token: Usuario)
+    fun deleteUsuario(usuario: Usuario)
 
-    @Query("SELECT * FROM usuarios WHERE id = :id")
-    fun getUsuario(id: Long): Flowable<Usuario>
+    @Query("DELETE FROM usuarios")
+    fun delete()
 }

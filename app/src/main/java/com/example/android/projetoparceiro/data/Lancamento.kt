@@ -3,7 +3,7 @@ package com.example.android.projetoparceiro.data
 import android.arch.persistence.room.*
 import android.arch.persistence.room.ForeignKey.CASCADE
 import com.example.android.projetoparceiro.R
-import com.example.android.projetoparceiro.util.DateConverter
+import com.example.android.projetoparceiro.util.RecipienteClassesVazias
 import java.util.*
 
 @Entity(
@@ -32,11 +32,10 @@ data class Lancamento(
         @Ignore
         var pessoa: Pessoa?,
         @Ignore
-        var conta: Conta?,
+        var conta: Conta,
         @ColumnInfo(name = "data_execucao")
         var dataExecucao: Date?,
-        var valor: Float?,
-        @Ignore
+        var valor: Float,
         var tipo: Int,
         @Ignore
         var usuario: Usuario?,
@@ -44,8 +43,8 @@ data class Lancamento(
         var documentos: ArrayList<DocumentoAnexo>?,
         @ColumnInfo(name = "criado_em")
         var criadoEm: Date?,
-        @ColumnInfo(name = "editado_em")
-        var editadoEm: Date?
+        @ColumnInfo(name = "modificado_em")
+        var modificadoEm: Date?
 ) {
 
     constructor() : this(
@@ -53,9 +52,9 @@ data class Lancamento(
             null,
             null,
             null,
+            RecipienteClassesVazias().getConta(),
             null,
-            null,
-            null,
+            0F,
             0,
             null,
             null,
@@ -68,7 +67,7 @@ data class Lancamento(
     @ColumnInfo(name = "pessoa_id")
     var pessoaId: Long? = pessoa?.id
     @ColumnInfo(name = "conta_id")
-    var contaId: Long? = conta?.id
+    var contaId: Long? = conta.id
     @ColumnInfo(name = "usuario_id")
     var usuarioId: String? = usuario?.id
 

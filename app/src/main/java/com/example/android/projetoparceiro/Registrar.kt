@@ -22,10 +22,6 @@ import retrofit2.Callback
 import com.google.gson.reflect.TypeToken
 import com.google.gson.Gson
 
-
-
-
-
 class Registrar : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -124,7 +120,7 @@ class Registrar : AppCompatActivity() {
             showProgress(true)
 
             val user = User()
-            user.name = nomeString
+            user.firstName = nomeString
             user.password  = senhaString
             user.email = emailString
 

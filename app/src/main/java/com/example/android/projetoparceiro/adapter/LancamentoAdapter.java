@@ -9,14 +9,19 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.android.projetoparceiro.R;
+import com.example.android.projetoparceiro.data.AppDatabase;
 import com.example.android.projetoparceiro.data.Lancamento;
+import com.example.android.projetoparceiro.data.Pessoa;
+import com.example.android.projetoparceiro.util.DataUtil;
+import com.example.android.projetoparceiro.util.Helper;
 
 import java.util.ArrayList;
 
 public class LancamentoAdapter extends ArrayAdapter<Lancamento> implements View.OnClickListener {
 
     private ArrayList<Lancamento> dataSet;
-    Context mContext;
+    private Context mContext;
+    private AppDatabase appDatabase;
 
     @Override
     public void onClick(View v) {
@@ -26,7 +31,8 @@ public class LancamentoAdapter extends ArrayAdapter<Lancamento> implements View.
     public LancamentoAdapter(ArrayList<Lancamento> data, Context context) {
         super(context, R.layout.row_item_lancamentos, data);
         this.dataSet = data;
-        this.mContext=context;
+        this.mContext = context;
+        this.appDatabase = AppDatabase.Companion.getAppDatabase(this.mContext);
     }
 
 
@@ -73,20 +79,32 @@ public class LancamentoAdapter extends ArrayAdapter<Lancamento> implements View.
 
 //        Animation animation = AnimationUtils.loadAnimation(mContext, (position > lastPosition) ? R.anim.up_from_bottom : R.anim.down_from_top);
 //        result.startAnimation(animation);
-        lastPosition = position;
+        this.lastPosition = position;
 
-        String clienteNome = "Não informado";
-
-        if (lancamento.getPessoa() != null) {
-            clienteNome = lancamento.getPessoa().getNome();
-        }
+        String clienteNome = "Cliente Não informado";
 
 //        viewHolder.mDataView.setText(lancamento.getDataExecucao());
-        viewHolder.mDataView.setText("14/10/2017");
-        viewHolder.mTipoView.setText(lancamento.tipoString());
-        viewHolder.mClienteView.setText(clienteNome);
-        viewHolder.mValorView.setText("R$ " + lancamento.getValor().toString());
-        viewHolder.mIconImageView.setImageResource(lancamento.tipoImage());
+
+        if (lancamento != null) {
+
+            if (lancamento.getPessoa() != null) {
+                clienteNome = lancamento.getPessoa().getNome();
+            } else if (lancamento.getPessoaId() != null) {
+                Pessoa pessoa = appDatabase.pessoaDao().getPessoaByIdLocal(lancamento.getPessoaId());
+                clienteNome = pessoa.getNome();
+            }
+
+            if (lancamento.getDataExecucao() != null) {
+                DataUtil dataUtil = new Helper().getDataUtil();
+
+                viewHolder.mDataView.setText(dataUtil.formatarData(lancamento.getDataExecucao()) + " " + dataUtil.formatarHora(lancamento.getDataExecucao()));
+            }
+
+            viewHolder.mTipoView.setText(lancamento.tipoString());
+            viewHolder.mClienteView.setText(clienteNome);
+            viewHolder.mValorView.setText("R$ " + new Helper().getNumeroUtil().formatarMoeda(lancamento.getValor()));
+            viewHolder.mIconImageView.setImageResource(lancamento.tipoImage());
+        }
         // Return the completed view to render on screen
         return convertView;
     }

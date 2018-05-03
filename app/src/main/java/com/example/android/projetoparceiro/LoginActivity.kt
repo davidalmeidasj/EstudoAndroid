@@ -56,7 +56,7 @@ class LoginActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
 
-        appDatabase = AppDatabase.getTokenDatabase(this)
+        appDatabase = AppDatabase.getAppDatabase(this)
     }
 
     private fun initRegistrar() {
