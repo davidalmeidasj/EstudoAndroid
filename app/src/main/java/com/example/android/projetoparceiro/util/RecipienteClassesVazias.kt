@@ -1,6 +1,7 @@
 package com.example.android.projetoparceiro.util
 
 import com.example.android.projetoparceiro.data.Conta
+import java.util.*
 
 class RecipienteClassesVazias {
 
@@ -12,5 +13,9 @@ class RecipienteClassesVazias {
                 null,
                 null,
                 null)
+    }
+
+    fun getDate(): Date {
+        return Date()
     }
 }

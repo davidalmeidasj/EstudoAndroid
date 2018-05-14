@@ -63,7 +63,7 @@ abstract class AppDatabase : RoomDatabase() {
 
                 INSTANCE = Room.databaseBuilder<AppDatabase>(context.applicationContext,
                         AppDatabase::class.java,
-                        "profissional-projeto225-db")
+                        "pp-db-v1")
                         .allowMainThreadQueries()
                         .build()
             }

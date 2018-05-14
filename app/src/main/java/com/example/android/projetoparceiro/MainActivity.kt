@@ -153,32 +153,7 @@ class MainActivity : AbstractConnect(), NavigationView.OnNavigationItemSelectedL
 
         lancamentos.forEach { itLancamento ->
 
-            this.appDatabase.contaDao().insertContas(itLancamento.conta)
-
-            val conta = this.appDatabase.contaDao().getConta(itLancamento.conta.id)
-            itLancamento.contaId = conta.idLocal
-
-            itLancamento.local?.let {
-
-                this.appDatabase.localDao().insertLocal(it)
-                val local = this.appDatabase.localDao().getLocal(it.id)
-                itLancamento.localId = local.idLocal
-            }
-
-            itLancamento.pessoa?.let {
-                this.appDatabase.pessoaDao().insertPessoas(it)
-                val pessoa = this.appDatabase.pessoaDao().getPessoa(it.id)
-                itLancamento.pessoaId = pessoa.idLocal
-            }
-
-            this.appDatabase.lancamentoDao().insertLancamentos(itLancamento)
-
-            val lancamento = this.appDatabase.lancamentoDao().getLancamento(itLancamento.id)
-
-            itLancamento.documentos?.forEach {
-                it.lancamentoId = lancamento.idLocal
-                this.appDatabase.documentoAnexoDao().insertDocumentos(it)
-            }
+            itLancamento.inserirLancamentoLocal(appDatabase)
         }
     }
 
@@ -234,10 +209,10 @@ class MainActivity : AbstractConnect(), NavigationView.OnNavigationItemSelectedL
                             if (isOnline()) {
                                 logout()
                             } else {
-                                showSnackBarMessage("Não há conexão com a internet.")
+                                showSnackBarMessage("Não há conexão com a internet. #$responseCode.")
                             }
                         }
-                        else -> showSnackBarMessage("Tente novamente mais tarde")
+                        else -> showSnackBarMessage("Tente novamente mais tarde #$responseCode.")
                     }
                 }
 
@@ -337,7 +312,7 @@ class MainActivity : AbstractConnect(), NavigationView.OnNavigationItemSelectedL
                     }
 
                     401 -> logout()
-                    else -> showSnackBarMessage("Tente novamente mais tarde")
+                    else -> showSnackBarMessage("Tente novamente mais tarde #$responseCode.")
                 }
 
                 mergeDataBase()

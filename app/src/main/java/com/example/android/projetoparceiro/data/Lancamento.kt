@@ -34,9 +34,10 @@ data class Lancamento(
         @Ignore
         var conta: Conta,
         @ColumnInfo(name = "data_execucao")
-        var dataExecucao: Date?,
+        var dataExecucao: Date,
         var valor: Float,
         var tipo: Int,
+        var ativo: Boolean,
         @Ignore
         var usuario: Usuario?,
         @Ignore
@@ -53,9 +54,10 @@ data class Lancamento(
             null,
             null,
             RecipienteClassesVazias().getConta(),
-            null,
+            RecipienteClassesVazias().getDate(),
             0F,
             0,
+            true,
             null,
             null,
             null,
@@ -73,7 +75,7 @@ data class Lancamento(
 
     fun tipoString(): String {
         return when (tipo) {
-            1 -> "Debito"
+            1 -> "Débito"
             2 -> "Crédito"
             else -> { // Note the block
                 ""
@@ -88,6 +90,35 @@ data class Lancamento(
             else -> { // Note the block
                 R.drawable.ic_trending_up_black_24dp
             }
+        }
+    }
+
+    fun inserirLancamentoLocal(appDatabase: AppDatabase) {
+        appDatabase.contaDao().insertContas(this.conta)
+
+        val conta = appDatabase.contaDao().getConta(this.conta.id)
+        this.contaId = conta.idLocal
+
+        this.local?.let {
+
+            appDatabase.localDao().insertLocal(it)
+            val local = appDatabase.localDao().getLocal(it.id)
+            this.localId = local.idLocal
+        }
+
+        this.pessoa?.let {
+            appDatabase.pessoaDao().insertPessoas(it)
+            val pessoa = appDatabase.pessoaDao().getPessoa(it.id)
+            this.pessoaId = pessoa.idLocal
+        }
+
+        appDatabase.lancamentoDao().insertLancamentos(this)
+
+        val lancamentoInserido = appDatabase.lancamentoDao().getLancamento(this.id)
+
+        this.documentos?.forEach {
+            it.lancamentoId = lancamentoInserido.idLocal
+            appDatabase.documentoAnexoDao().insertDocumentos(it)
         }
     }
 }

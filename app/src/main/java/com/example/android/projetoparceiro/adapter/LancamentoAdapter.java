@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.example.android.projetoparceiro.R;
 import com.example.android.projetoparceiro.data.AppDatabase;
+import com.example.android.projetoparceiro.data.Conta;
 import com.example.android.projetoparceiro.data.Lancamento;
 import com.example.android.projetoparceiro.data.Pessoa;
 import com.example.android.projetoparceiro.util.DataUtil;
@@ -100,7 +101,12 @@ public class LancamentoAdapter extends ArrayAdapter<Lancamento> implements View.
                 viewHolder.mDataView.setText(dataUtil.formatarData(lancamento.getDataExecucao()) + " " + dataUtil.formatarHora(lancamento.getDataExecucao()));
             }
 
-            viewHolder.mTipoView.setText(lancamento.tipoString());
+            Long contaIdLocal = lancamento.getContaId();
+            if (contaIdLocal != null) {
+                Conta conta = appDatabase.contaDao().getContaLocal(contaIdLocal);
+                viewHolder.mTipoView.setText(conta.getNome());
+            }
+
             viewHolder.mClienteView.setText(clienteNome);
             viewHolder.mValorView.setText("R$ " + new Helper().getNumeroUtil().formatarMoeda(lancamento.getValor()));
             viewHolder.mIconImageView.setImageResource(lancamento.tipoImage());
